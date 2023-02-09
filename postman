@@ -1,0 +1,12 @@
+POST
+
+http://localhost:5000/transaction
+
+Choose raw
+there is a drop down menu JSON
+
+{
+"usd_amount": 20,
+"lbp_amount": 400000,
+"usd_to_lbp": true
+}
