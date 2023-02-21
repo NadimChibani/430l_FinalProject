@@ -1,9 +1,11 @@
 from flask import Flask
 from flask import request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Ndragon5@localhost:3306/exchange'
+CORS(app)
 db = SQLAlchemy(app)
 
 
