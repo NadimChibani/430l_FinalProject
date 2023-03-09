@@ -2,7 +2,10 @@ from flask import Flask
 from flask import request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask_marshmallow import Marshmallow
+
 app = Flask(__name__)
+ma = Marshmallow(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Ndragon5@localhost:3306/exchange'
 CORS(app)
@@ -19,6 +22,12 @@ class Transaction(db.Model):
         self.lbp_amount = lbp_amount
         self.usd_to_lbp = usd_to_lbp
 
+class TransactionSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "usd_amount", "lbp_amount", "usd_to_lbp")
+        model = Transaction
+transaction_schema = TransactionSchema()
+
 
 #Python
 # >>> from app import app,db
@@ -30,7 +39,6 @@ class Transaction(db.Model):
 @app.route('/transaction',methods=['POST'])
 def handle_insert():
     usd_amount = request.json["usd_amount"]
-    print(usd_amount)
     lbp_amount = request.json["lbp_amount"]
     usd_to_lbp = request.json["usd_to_lbp"]
     
@@ -39,11 +47,8 @@ def handle_insert():
     db.session.add(new_Transaction)
     db.session.commit()
 
-    return jsonify(
-            message="Success",
-            category="success",
-            status=200
-      )
+    return jsonify(transaction_schema.dump(new_Transaction))
+
 
 @app.route('/exchangeRate' ,methods=['GET'])
 def handle_Rate_Check():
