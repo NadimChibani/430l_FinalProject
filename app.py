@@ -3,8 +3,10 @@ from flask import request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_marshmallow import Marshmallow
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 ma = Marshmallow(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Ndragon5@localhost:3306/exchange'
@@ -28,12 +30,38 @@ class TransactionSchema(ma.Schema):
         model = Transaction
 transaction_schema = TransactionSchema()
 
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_name = db.Column(db.String(30), unique=True)
+    hashed_password = db.Column(db.String(128))
+    def __init__(self, user_name, password):
+        super(User, self).__init__(user_name=user_name)
+        self.hashed_password = bcrypt.generate_password_hash(password)
+
+class UserSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "user_name")
+        model = User
+user_schema = UserSchema()
+
 
 #Python
 # >>> from app import app,db
 # >>> app.app_context().push()
 # >>> db.create_all()
 # >>> exit()
+
+@app.route('/user',methods=['POST'])
+def handle_new_user():
+    user_name = request.json["user_name"]
+    password = request.json["password"]
+
+    new_User = User(user_name,password)
+
+    db.session.add(new_User)
+    db.session.commit()
+
+    return jsonify(user_schema.dump(new_User))
 
 
 @app.route('/transaction',methods=['POST'])
@@ -79,3 +107,6 @@ def handle_Rate_Check():
         usd_to_lbp = usd_to_lbp,
         lbp_to_usd = lbp_to_usd
     )
+
+with app.app_context():
+    db.create_all()
