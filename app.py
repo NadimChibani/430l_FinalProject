@@ -4,6 +4,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_marshmallow import Marshmallow
 from flask_bcrypt import Bcrypt
+from flask import abort
+import jwt
+import datetime
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -13,6 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Ndragon5@localhost
 CORS(app)
 db = SQLAlchemy(app)
 
+SECRET_KEY = "b'|\xe7\xbfU3`\xc4\xec\xa7\xa9zf:}\xb5\xc7\xb9\x139^3@Dv'"
 
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -44,6 +48,18 @@ class UserSchema(ma.Schema):
         model = User
 user_schema = UserSchema()
 
+def create_token(user_id):
+    payload = {
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=4),
+        'iat': datetime.datetime.utcnow(),
+        'sub': user_id
+    }
+    return jwt.encode(
+        payload,
+        SECRET_KEY,
+        algorithm='HS256'
+    )
+
 
 #Python
 # >>> from app import app,db
@@ -63,6 +79,23 @@ def handle_new_user():
 
     return jsonify(user_schema.dump(new_User))
 
+@app.route('/authentication',methods=['POST'])
+def handle_user_authentication():
+    user_name = request.json["user_name"]
+    password = request.json["password"]
+    
+    if(user_name==None or user_name=="" or password==None or password==""):
+        return abort(400)
+    
+    existsInDatabase = User.query.filter_by(user_name=user_name).first()
+    
+    if(existsInDatabase == None):
+        abort(403)
+
+    if not bcrypt.check_password_hash(existsInDatabase.hashed_password, password):
+        abort(403)
+
+    return jsonify({"token":create_token(existsInDatabase.id)})
 
 @app.route('/transaction',methods=['POST'])
 def handle_insert():
