@@ -41,7 +41,7 @@ class Transaction(db.Model):
 
 class TransactionSchema(ma.Schema):
     class Meta:
-        fields = ("id", "usd_amount", "lbp_amount", "usd_to_lbp","added_date","user_id")
+        fields = ("id", "usd_amount", "lbp_amount", "usd_to_lbp","added_date")
         model = Transaction
 
 
@@ -154,14 +154,14 @@ def handle_extract():
 
 @app.route('/exchangeRate' ,methods=['GET'])
 def handle_Rate_Check():
-    usd_to_lbp_Transactions = Transaction.query.filter_by(usd_to_lbp=1).all()
-    lbp_to_usd_Transactions = Transaction.query.filter_by(usd_to_lbp=0).all()
+    usd_to_lbp_Transactions = Transaction.query.filter(Transaction.added_date.between(datetime.datetime.utcnow() - datetime.timedelta(days=3),datetime.datetime.utcnow()),Transaction.usd_to_lbp == True).all()
+    lbp_to_usd_Transactions = Transaction.query.filter(Transaction.added_date.between(datetime.datetime.utcnow() - datetime.timedelta(days=3),datetime.datetime.utcnow()),Transaction.usd_to_lbp == False).all()
 
     usd_to_lbp_Total = 0
     lbp_to_usd_Total = 0
 
     for i in usd_to_lbp_Transactions:
-        usd_to_lbp_Total += i.usd_amount/i.lbp_amount 
+        usd_to_lbp_Total += i.lbp_amount/i.usd_amount 
 
     for i in lbp_to_usd_Transactions:
         lbp_to_usd_Total += i.lbp_amount/i.usd_amount 
@@ -170,7 +170,7 @@ def handle_Rate_Check():
     if(len(usd_to_lbp_Transactions)!=0):
         usd_to_lbp = usd_to_lbp_Total/len(usd_to_lbp_Transactions)
     else:
-        lbp_to_usd = "NO DATA"   
+        usd_to_lbp = "NO DATA"   
 
     if(len(lbp_to_usd_Transactions)!=0):
         lbp_to_usd = lbp_to_usd_Total/len(lbp_to_usd_Transactions)
