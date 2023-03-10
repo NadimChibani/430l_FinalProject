@@ -23,16 +23,27 @@ class Transaction(db.Model):
     usd_amount = db.Column(db.Float,nullable=False)
     lbp_amount = db.Column(db.Float,nullable=False)
     usd_to_lbp = db.Column(db.Boolean,nullable=False)
+    added_date = db.Column(db.DateTime)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+    nullable=True)
+
     def __init__(self, usd_amount, lbp_amount,usd_to_lbp):
         self.usd_amount = usd_amount
         self.lbp_amount = lbp_amount
         self.usd_to_lbp = usd_to_lbp
 
+    def __init__(self, usd_amount, lbp_amount, usd_to_lbp, user_id):
+        super(Transaction, self).__init__(usd_amount=usd_amount,
+        lbp_amount=lbp_amount, usd_to_lbp=usd_to_lbp,
+        user_id=user_id,
+        added_date=datetime.datetime.now())
+
+
 class TransactionSchema(ma.Schema):
     class Meta:
-        fields = ("id", "usd_amount", "lbp_amount", "usd_to_lbp")
+        fields = ("id", "usd_amount", "lbp_amount", "usd_to_lbp","added_date","user_id")
         model = Transaction
-transaction_schema = TransactionSchema()
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -60,6 +71,17 @@ def create_token(user_id):
         algorithm='HS256'
     )
 
+def extract_auth_token(authenticated_request):
+    auth_header = authenticated_request.headers.get('Authorization')
+    
+    if auth_header:
+        return auth_header.split(" ")[1]
+    else:
+        return None
+    
+def decode_token(token):
+    payload = jwt.decode(token, SECRET_KEY, 'HS256')
+    return payload['sub']
 
 #Python
 # >>> from app import app,db
@@ -85,7 +107,7 @@ def handle_user_authentication():
     password = request.json["password"]
     
     if(user_name==None or user_name=="" or password==None or password==""):
-        return abort(400)
+        abort(400)
     
     existsInDatabase = User.query.filter_by(user_name=user_name).first()
     
@@ -102,13 +124,32 @@ def handle_insert():
     usd_amount = request.json["usd_amount"]
     lbp_amount = request.json["lbp_amount"]
     usd_to_lbp = request.json["usd_to_lbp"]
+    authentication_token = extract_auth_token(request)
     
-    new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp)
+    if (authentication_token != None):
+        user_id = decode_token(authentication_token)
+        
+        if(user_id==None or user_id==0 or not User.query.filter_by(id=user_id).first()):
+            abort(403)
+
+        new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp,user_id)
+    else:
+        new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp,None)
 
     db.session.add(new_Transaction)
     db.session.commit()
 
     return jsonify(transaction_schema.dump(new_Transaction))
+
+@app.route('/transaction',methods=['GET'])
+def handle_extract():
+    authentication_token = extract_auth_token(request)
+    if (authentication_token != None):
+        user_id = decode_token(authentication_token)
+        if(not User.query.filter_by(id=user_id).first()):
+            abort(403)
+        transactions = Transaction.query.filter_by(user_id=user_id).all()
+        return jsonify(transactions_schema.dump(transactions))
 
 
 @app.route('/exchangeRate' ,methods=['GET'])
@@ -140,6 +181,9 @@ def handle_Rate_Check():
         usd_to_lbp = usd_to_lbp,
         lbp_to_usd = lbp_to_usd
     )
+
+transaction_schema = TransactionSchema()
+transactions_schema = TransactionSchema(many=True)
 
 with app.app_context():
     db.create_all()
