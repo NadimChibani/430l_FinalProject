@@ -134,7 +134,7 @@ def handle_insert():
 
         new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp,user_id)
     else:
-        new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp,None)
+        new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp)
 
     db.session.add(new_Transaction)
     db.session.commit()
@@ -154,8 +154,8 @@ def handle_extract():
 
 @app.route('/exchangeRate' ,methods=['GET'])
 def handle_Rate_Check():
-    usd_to_lbp_Transactions = Transaction.query.filter(Transaction.added_date.between(datetime.datetime.utcnow() - datetime.timedelta(days=3),datetime.datetime.utcnow()),Transaction.usd_to_lbp == True).all()
-    lbp_to_usd_Transactions = Transaction.query.filter(Transaction.added_date.between(datetime.datetime.utcnow() - datetime.timedelta(days=3),datetime.datetime.utcnow()),Transaction.usd_to_lbp == False).all()
+    usd_to_lbp_Transactions = Transaction.query.filter(Transaction.added_date.between(datetime.datetime.now() - datetime.timedelta(days=3),datetime.datetime.now()),Transaction.usd_to_lbp == True).all()
+    lbp_to_usd_Transactions = Transaction.query.filter(Transaction.added_date.between(datetime.datetime.now() - datetime.timedelta(days=3),datetime.datetime.now()),Transaction.usd_to_lbp == False).all()
 
     usd_to_lbp_Total = 0
     lbp_to_usd_Total = 0
