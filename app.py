@@ -7,7 +7,7 @@ from flask_bcrypt import Bcrypt
 from flask import abort
 import jwt
 import datetime
-import .db_config 
+import db_config 
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
