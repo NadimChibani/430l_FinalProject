@@ -8,13 +8,13 @@ from flask import abort
 import jwt
 import datetime
 #from project.my_app import db_config
-import os
+# import os
 
 app = Flask(__name__)
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+# if __name__ == '__main__':
+#     port = int(os.environ.get('PORT', 5000))
+#     app.run(host='0.0.0.0', port=port)
 
 bcrypt = Bcrypt(app)
 ma = Marshmallow(app)
