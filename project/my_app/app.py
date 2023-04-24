@@ -7,13 +7,13 @@ from flask_bcrypt import Bcrypt
 from flask import abort
 import jwt
 import datetime
-from project.my_app import db_config
+#from project.my_app import db_config
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 ma = Marshmallow(app)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = db_config.DB_CONFIG
+DB_CONFIG = 'mysql+pymysql://root:Ndragon5@localhost:3306/exchange'
+app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
 CORS(app)
 db = SQLAlchemy(app)
 
