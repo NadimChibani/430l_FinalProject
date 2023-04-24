@@ -8,17 +8,15 @@ from flask import abort
 import jwt
 import datetime
 #from project.my_app import db_config
-# import os
 
 app = Flask(__name__)
 
-# if __name__ == '__main__':
-#     port = int(os.environ.get('PORT', 5000))
-#     app.run(host='0.0.0.0', port=port)
-
 bcrypt = Bcrypt(app)
 ma = Marshmallow(app)
+
+#Had to put it here wasn't working otherwise need to test now that comfirmed working
 DB_CONFIG = 'mysql://b1f4047b288625:32f778fa@eu-cdbr-west-03.cleardb.net/heroku_831116c766fd72a'
+
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
 CORS(app)
 db = SQLAlchemy(app)
