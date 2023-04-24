@@ -12,7 +12,7 @@ import datetime
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 ma = Marshmallow(app)
-DB_CONFIG = 'mysql://b1f4047b288625:32f778fa@eu-cdbr-west-03.cleardb.net/heroku_831116c766fd72a?reconnect=true'
+DB_CONFIG = 'mysql://b1f4047b288625:32f778fa@eu-cdbr-west-03.cleardb.net/heroku_831116c766fd72a'
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
 CORS(app)
 db = SQLAlchemy(app)
