@@ -83,6 +83,7 @@ def handle_insert():
     usd_amount = request.json["usd_amount"]
     lbp_amount = request.json["lbp_amount"]
     usd_to_lbp = request.json["usd_to_lbp"]
+    validateTransactionInput(usd_amount,lbp_amount,usd_to_lbp)
     authentication_token = extract_auth_token(request)
     user_id = validateAuthenticationToken(authentication_token)
 
@@ -125,6 +126,18 @@ def getRateAverage(total,listlength):
     if(listlength==0):
         return "NO DATA"
     return total/listlength
+
+def validateTransactionInput(usd_amount,lbp_amount,usd_to_lbp):
+    if(usd_amount==None or lbp_amount==None or usd_to_lbp==None or usd_amount=="" or lbp_amount=="" or usd_to_lbp==""):
+        abort(400, 'UsdAmount or LbpAmount or TransactionType cannot be empty')
+    if(usd_amount<0):
+        abort(400, 'UsdAmount cannot be negative')
+    if(lbp_amount<0):
+        abort(400, 'LbpAmount cannot be negative')
+    if(usd_amount==0):
+        abort(400, 'UsdAmount cannot be zero')
+    if(lbp_amount==0):
+        abort(400, 'LbpAmount cannot be zero')
 
 def validateUserInput(user_name,password):
     if(user_name==None or user_name=="" or password==None or password==""):
