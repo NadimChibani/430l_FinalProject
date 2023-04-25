@@ -7,7 +7,8 @@ from flask_bcrypt import Bcrypt
 from flask import abort
 import jwt
 import datetime
-from sqlalchemy import func
+from flask import Response
+import json
 #from project.my_app import db_config
 
 app = Flask(__name__)
@@ -23,7 +24,7 @@ CORS(app)
 db = SQLAlchemy(app)
 
 from project.my_app.model.user import User, user_schema
-from project.my_app.model.transaction import Transaction, transaction_schema, transactions_schema
+from project.my_app.model.transaction import Transaction, transaction_schema, transactions_schema, transactions_data_schema, transactions_date_schema
 
 SECRET_KEY = "b'|\xe7\xbfU3`\xc4\xec\xa7\xa9zf:}\xb5\xc7\xb9\x139^3@Dv'"
 
@@ -167,8 +168,11 @@ def validateAuthenticationToken(authentication_token):
         abort(403, 'Invalid authentication token')
 
 def addToDatabase(object):
-    db.session.add(object)
-    db.session.commit()
+    try:
+        db.session.add(object)
+        db.session.commit()
+    except:
+        abort(500, 'Error adding to database')
 
 def checkAuthenticationTokenNotNull(authentication_token):
     if(authentication_token == None):
@@ -178,34 +182,53 @@ def getAllTransactionsOfUser(user_id):
     transactions = Transaction.query.filter_by(user_id=user_id).all()
     return transactions
 
-# @app.route('/transactions/graphaversages' ,methods=['GET'])
-# def get_hourly_transaction_averages():
-#     #first have to determine the start and end dates
+def getAllTransactionOrderedByDateAndType(usd_to_lbp):
+    transactions = Transaction.query.filter(Transaction.usd_to_lbp == usd_to_lbp).order_by(Transaction.added_date.desc()).all()
+    return transactions
 
-#     start_date_str = request.args.get('start_date', default='1 hour ago', type=str)
-#     end_date_str = request.args.get('end_date', default='now', type=str)
-#     try:
-#         start_date = datetime.fromisoformat(start_date_str)
-#     except ValueError:
-#         start_date = datetime.utcnow() - timedelta(hours=1)
-#     try:
-#         end_date = datetime.fromisoformat(end_date_str)
-#     except ValueError:
-#         end_date = datetime.utcnow()
+@app.route('/transaction/datapoints' ,methods=['GET'])
+#for now going to do the send all data points, later will do the averages if needed
+def get_hourly_transaction_averages():
+    #first have to determine the start and end dates
+    usd_transactions = getAllTransactionOrderedByDateAndType(usd_to_lbp = True)
+    usd_transactionsDataList = transactions_data_schema.dump(usd_transactions)
+    usd_transactionsDateList = transactions_date_schema.dump(usd_transactions)
 
-#     delta = timedelta(hours=1)
-#     current_date = start_date
-#     hourly_averages = []
-#     while current_date <= end_date:
-#         next_date = current_date + delta
-#         query = db.session.query(db.func.avg(Transaction.amount)).filter(Transaction.created_at >= current_date, Transaction.created_at < next_date)
-#         hourly_average = query.scalar()
-#         if hourly_average:
-#             hourly_averages.append(hourly_average)
-#         current_date = next_date
+    lbp_transactions = getAllTransactionOrderedByDateAndType(usd_to_lbp = False)
+    lbp_transactionsDataList = transactions_data_schema.dump(lbp_transactions)
+    lbp_transactionsDateList = transactions_date_schema.dump(lbp_transactions)
+
+    return Response(json.dumps({'usd data points' : usd_transactionsDataList,
+                                'usd dates' : usd_transactionsDateList,
+                                'lbp data point' : lbp_transactionsDataList,
+                                'lbp dates' : lbp_transactionsDateList}),  mimetype='application/json')
+
+    # start_date_str = request.args.get('start_date', default='1 hour ago', type=str)
+    # end_date_str = request.args.get('end_date', default='now', type=str)
+    # try:
+    #     start_date = datetime.fromisoformat(start_date_str)
+    # except ValueError:
+    #     start_date = datetime.utcnow() - timedelta(hours=1)
+    # try:
+    #     end_date = datetime.fromisoformat(end_date_str)
+    # except ValueError:
+    #     end_date = datetime.utcnow()
+
+    # delta = timedelta(hours=1)
+    # current_date = start_date
+    # hourly_averages = []
+    # while current_date <= end_date:
+    #     next_date = current_date + delta
+    #     query = db.session.query(db.func.avg(Transaction.amount)).filter(Transaction.created_at >= current_date, Transaction.created_at < next_date)
+    #     hourly_average = query.scalar()
+    #     if hourly_average:
+    #         hourly_averages.append(hourly_average)
+    #     current_date = next_date
     
-#     response_data = {'averages': hourly_averages}
-#     return jsonify(response_data)
+    # response_data = {'averages': hourly_averages}
+
+
+    # return jsonify(response_data)
 
 with app.app_context():
     db.create_all()
