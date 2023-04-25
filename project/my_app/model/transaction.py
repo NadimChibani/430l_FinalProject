@@ -21,17 +21,5 @@ class TransactionSchema(ma.Schema):
         fields = ("id", "usd_amount", "lbp_amount", "usd_to_lbp","added_date")
         model = Transaction
 
-class TransactionsDataSchema(ma.Schema):
-    class Meta:
-        fields = ("id","usd_amount", "lbp_amount")
-        model = Transaction
-
-class TransactionsDateSchema(ma.Schema):
-    class Meta:
-        fields = ("id" , "added_date")
-        model = Transaction
-
 transaction_schema = TransactionSchema()
 transactions_schema = TransactionSchema(many=True)
-transactions_data_schema = TransactionsDataSchema(many=True)
-transactions_date_schema = TransactionsDateSchema(many=True)
