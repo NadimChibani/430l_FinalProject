@@ -24,7 +24,7 @@ CORS(app)
 db = SQLAlchemy(app)
 
 from project.my_app.model.user import User, user_schema
-from project.my_app.model.transaction import Transaction, transaction_schema, transactions_schema, transactions_data_schema, transactions_date_schema
+from project.my_app.model.transaction import Transaction, transaction_schema, transactions_schema #, transactions_data_schema, transactions_date_schema
 
 SECRET_KEY = "b'|\xe7\xbfU3`\xc4\xec\xa7\xa9zf:}\xb5\xc7\xb9\x139^3@Dv'"
 
@@ -90,7 +90,7 @@ def handle_insert():
 
     new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp,user_id)
     addToDatabase(new_Transaction)
-    return jsonify(transaction_schema.dump(new_Transaction))
+    return jsonify(transaction_schema.dump(new_Transaction)),201
 
 @app.route('/transaction',methods=['GET'])
 def handle_extract():
@@ -191,17 +191,13 @@ def getAllTransactionOrderedByDateAndType(usd_to_lbp):
 def get_hourly_transaction_averages():
     #first have to determine the start and end dates
     usd_transactions = getAllTransactionOrderedByDateAndType(usd_to_lbp = True)
-    usd_transactionsDataList = transactions_data_schema.dump(usd_transactions)
-    usd_transactionsDateList = transactions_date_schema.dump(usd_transactions)
+    usd_transactionsDataList = transactions_schema.dump(usd_transactions)
 
     lbp_transactions = getAllTransactionOrderedByDateAndType(usd_to_lbp = False)
-    lbp_transactionsDataList = transactions_data_schema.dump(lbp_transactions)
-    lbp_transactionsDateList = transactions_date_schema.dump(lbp_transactions)
+    lbp_transactionsDataList = transactions_schema.dump(lbp_transactions)
 
     return Response(json.dumps({'usd data points' : usd_transactionsDataList,
-                                'usd dates' : usd_transactionsDateList,
-                                'lbp data point' : lbp_transactionsDataList,
-                                'lbp dates' : lbp_transactionsDateList}),  mimetype='application/json')
+                                'lbp data point' : lbp_transactionsDataList,}),  mimetype='application/json')
 
     # start_date_str = request.args.get('start_date', default='1 hour ago', type=str)
     # end_date_str = request.args.get('end_date', default='now', type=str)
