@@ -7,6 +7,7 @@ from flask_bcrypt import Bcrypt
 from flask import abort
 import jwt
 import datetime
+from sqlalchemy import func
 #from project.my_app import db_config
 
 app = Flask(__name__)
@@ -60,11 +61,11 @@ def decode_token(token):
 def handle_new_user():
     user_name = request.json["user_name"]
     password = request.json["password"]
+    validateUserInput(user_name,password)
 
+    validateUserInputAlreadyExists(user_name)
     new_User = User(user_name,password)
-
-    db.session.add(new_User)
-    db.session.commit()
+    addToDatabase(new_User)
 
     return jsonify(user_schema.dump(new_User))
 
@@ -72,18 +73,9 @@ def handle_new_user():
 def handle_user_authentication():
     user_name = request.json["user_name"]
     password = request.json["password"]
-    
-    if(user_name==None or user_name=="" or password==None or password==""):
-        abort(400)
-    
-    existsInDatabase = User.query.filter_by(user_name=user_name).first()
-    
-    if(existsInDatabase == None):
-        abort(403)
+    validateUserInput(user_name,password)
 
-    if not bcrypt.check_password_hash(existsInDatabase.hashed_password, password):
-        abort(403)
-
+    existsInDatabase = validateUserExists(user_name,password)
     return jsonify({"token":create_token(existsInDatabase.id)})
 
 @app.route('/transaction',methods=['POST'])
@@ -91,63 +83,129 @@ def handle_insert():
     usd_amount = request.json["usd_amount"]
     lbp_amount = request.json["lbp_amount"]
     usd_to_lbp = request.json["usd_to_lbp"]
+    validateTransactionInput(usd_amount,lbp_amount,usd_to_lbp)
     authentication_token = extract_auth_token(request)
-    
-    if (authentication_token != None):
-        user_id = decode_token(authentication_token)
-        
-        if(user_id==None or user_id==0 or not User.query.filter_by(id=user_id).first()):
-            abort(403)
+    user_id = validateAuthenticationToken(authentication_token)
 
-        new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp,user_id)
-    else:
-        new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp,None)
-
-    db.session.add(new_Transaction)
-    db.session.commit()
-
+    new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp,user_id)
+    addToDatabase(new_Transaction)
     return jsonify(transaction_schema.dump(new_Transaction))
 
 @app.route('/transaction',methods=['GET'])
 def handle_extract():
     authentication_token = extract_auth_token(request)
-    if (authentication_token != None):
-        user_id = decode_token(authentication_token)
-        if(not User.query.filter_by(id=user_id).first()):
-            abort(403)
-        transactions = Transaction.query.filter_by(user_id=user_id).all()
-        return jsonify(transactions_schema.dump(transactions))
-
+    checkAuthenticationTokenNotNull(authentication_token)
+    user_id = validateAuthenticationToken(authentication_token)
+    transactions = getAllTransactionsOfUser(user_id)
+    return jsonify(transactions_schema.dump(transactions))
 
 @app.route('/exchangeRate' ,methods=['GET'])
 def handle_Rate_Check():
-    usd_to_lbp_Transactions = Transaction.query.filter(Transaction.added_date.between(datetime.datetime.now() - datetime.timedelta(days=3),datetime.datetime.now()),Transaction.usd_to_lbp == True).all()
-    lbp_to_usd_Transactions = Transaction.query.filter(Transaction.added_date.between(datetime.datetime.now() - datetime.timedelta(days=3),datetime.datetime.now()),Transaction.usd_to_lbp == False).all()
-
-    usd_to_lbp_Total = 0
-    lbp_to_usd_Total = 0
-
-    for i in usd_to_lbp_Transactions:
-        usd_to_lbp_Total += i.lbp_amount/i.usd_amount 
-
-    for i in lbp_to_usd_Transactions:
-        lbp_to_usd_Total += i.lbp_amount/i.usd_amount 
-
-    #if no data for each case
-    if(len(usd_to_lbp_Transactions)!=0):
-        usd_to_lbp = usd_to_lbp_Total/len(usd_to_lbp_Transactions)
-    else:
-        usd_to_lbp = "NO DATA"   
-
-    if(len(lbp_to_usd_Transactions)!=0):
-        lbp_to_usd = lbp_to_usd_Total/len(lbp_to_usd_Transactions)
-    else:
-        lbp_to_usd = "NO DATA"
+    usd_to_lbp_Transactions = getAllTransactionsLastThreeDays(True)
+    lbp_to_usd_Transactions = getAllTransactionsLastThreeDays(False)
+    usd_to_lbp_Total = sumAllRates(usd_to_lbp_Transactions)
+    lbp_to_usd_Total = sumAllRates(lbp_to_usd_Transactions)
+    usd_to_lbp = getRateAverage(usd_to_lbp_Total,len(usd_to_lbp_Transactions))
+    lbp_to_usd = getRateAverage(lbp_to_usd_Total,len(lbp_to_usd_Transactions))
 
     return jsonify(
         usd_to_lbp = usd_to_lbp,
         lbp_to_usd = lbp_to_usd
     )
+
+def getAllTransactionsLastThreeDays(usd_to_lbp):
+    return Transaction.query.filter(Transaction.added_date.between(datetime.datetime.now() - datetime.timedelta(days=3),datetime.datetime.now()),Transaction.usd_to_lbp == usd_to_lbp).all()
+
+def sumAllRates(list):
+    sum = 0
+    for i in list:
+        sum += i.lbp_amount/i.usd_amount
+    return sum
+
+def getRateAverage(total,listlength):
+    if(listlength==0):
+        return "NO DATA"
+    return total/listlength
+
+def validateTransactionInput(usd_amount,lbp_amount,usd_to_lbp):
+    if(usd_amount==None or lbp_amount==None or usd_to_lbp==None or usd_amount=="" or lbp_amount=="" or usd_to_lbp==""):
+        abort(400, 'UsdAmount or LbpAmount or TransactionType cannot be empty')
+    if(usd_amount<0):
+        abort(400, 'UsdAmount cannot be negative')
+    if(lbp_amount<0):
+        abort(400, 'LbpAmount cannot be negative')
+    if(usd_amount==0):
+        abort(400, 'UsdAmount cannot be zero')
+    if(lbp_amount==0):
+        abort(400, 'LbpAmount cannot be zero')
+
+def validateUserInput(user_name,password):
+    if(user_name==None or user_name=="" or password==None or password==""):
+        abort(400, 'Username or Password cannot be empty')
+
+def validateUserInputAlreadyExists(user_name):
+    if(User.query.filter_by(user_name=user_name).first()):
+        abort(409, 'User '+ user_name+' already exists')
+
+def validateUserExists(user_name,password):
+    existsInDatabase = User.query.filter_by(user_name=user_name).first()
+    if(existsInDatabase == None):
+        abort(404, 'User '+ user_name+' does not exist')
+    if not bcrypt.check_password_hash(existsInDatabase.hashed_password, password):
+        abort(403, 'Incorrect password')
+    return existsInDatabase
+
+def validateAuthenticationToken(authentication_token):
+    if(authentication_token == None):
+        return None
+    try:
+        user_id = decode_token(authentication_token)
+        if(user_id==None or user_id==0 or not User.query.filter_by(id=user_id).first()):
+            abort(403, 'Authentication token not linked to existing user')
+        return user_id
+    except:
+        abort(403, 'Invalid authentication token')
+
+def addToDatabase(object):
+    db.session.add(object)
+    db.session.commit()
+
+def checkAuthenticationTokenNotNull(authentication_token):
+    if(authentication_token == None):
+        abort(403, 'Authentication token not provided')
+
+def getAllTransactionsOfUser(user_id):
+    transactions = Transaction.query.filter_by(user_id=user_id).all()
+    return transactions
+
+# @app.route('/transactions/graphaversages' ,methods=['GET'])
+# def get_hourly_transaction_averages():
+#     #first have to determine the start and end dates
+
+#     start_date_str = request.args.get('start_date', default='1 hour ago', type=str)
+#     end_date_str = request.args.get('end_date', default='now', type=str)
+#     try:
+#         start_date = datetime.fromisoformat(start_date_str)
+#     except ValueError:
+#         start_date = datetime.utcnow() - timedelta(hours=1)
+#     try:
+#         end_date = datetime.fromisoformat(end_date_str)
+#     except ValueError:
+#         end_date = datetime.utcnow()
+
+#     delta = timedelta(hours=1)
+#     current_date = start_date
+#     hourly_averages = []
+#     while current_date <= end_date:
+#         next_date = current_date + delta
+#         query = db.session.query(db.func.avg(Transaction.amount)).filter(Transaction.created_at >= current_date, Transaction.created_at < next_date)
+#         hourly_average = query.scalar()
+#         if hourly_average:
+#             hourly_averages.append(hourly_average)
+#         current_date = next_date
+    
+#     response_data = {'averages': hourly_averages}
+#     return jsonify(response_data)
 
 with app.app_context():
     db.create_all()
