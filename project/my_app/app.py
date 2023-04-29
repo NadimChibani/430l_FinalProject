@@ -220,7 +220,6 @@ def get_time_based_transaction_averages():
     averagesUsd = []
     averagesLbp = []
     dates = []
-    filtered_usd_transactions = [t for t in usd_transactions if next_step_date <= t.added_date <= current_date]
     # filtered_usd_transactions = transactions_schema.dump(filtered_usd_transactions)
     # return jsonify(filtered_usd_transactions)
     # return jsonify(current_date,next_step_date)
@@ -236,8 +235,8 @@ def get_time_based_transaction_averages():
         next_step_date = next_step_date - timeStep
     
 
-    response_data = {'averagesUsd': averagesUsd,
-                     'averagesLbp': averagesLbp,
+    response_data = {'averagesUsdToLbp': averagesUsd,
+                     'averagesLbpToUsd': averagesLbp,
                      'dates': dates,}
     return jsonify(response_data)
 
