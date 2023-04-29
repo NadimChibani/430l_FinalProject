@@ -9,6 +9,7 @@ import jwt
 import datetime
 from flask import Response
 import json
+from dateutil.relativedelta import relativedelta
 #from project.my_app import db_config
 
 app = Flask(__name__)
@@ -104,18 +105,25 @@ def handle_extract():
 def handle_Rate_Check():
     usd_to_lbp_Transactions = getAllTransactionsLastThreeDays(True)
     lbp_to_usd_Transactions = getAllTransactionsLastThreeDays(False)
-    usd_to_lbp_Total = sumAllRates(usd_to_lbp_Transactions)
-    lbp_to_usd_Total = sumAllRates(lbp_to_usd_Transactions)
-    usd_to_lbp = getRateAverage(usd_to_lbp_Total,len(usd_to_lbp_Transactions))
-    lbp_to_usd = getRateAverage(lbp_to_usd_Total,len(lbp_to_usd_Transactions))
+    usd_to_lbp, lbp_to_usd = calculateAveragesGivenInformation(usd_to_lbp_Transactions,lbp_to_usd_Transactions)
 
     return jsonify(
         usd_to_lbp = usd_to_lbp,
         lbp_to_usd = lbp_to_usd
     )
 
+def calculateAveragesGivenInformation(usd_to_lbp_Transactions,lbp_to_usd_Transactions):
+    usd_to_lbp_Total = sumAllRates(usd_to_lbp_Transactions)
+    lbp_to_usd_Total = sumAllRates(lbp_to_usd_Transactions)
+    usd_to_lbp = getRateAverage(usd_to_lbp_Total,len(usd_to_lbp_Transactions))
+    lbp_to_usd = getRateAverage(lbp_to_usd_Total,len(lbp_to_usd_Transactions))
+    return usd_to_lbp,lbp_to_usd
+
 def getAllTransactionsLastThreeDays(usd_to_lbp):
-    return Transaction.query.filter(Transaction.added_date.between(datetime.datetime.now() - datetime.timedelta(days=3),datetime.datetime.now()),Transaction.usd_to_lbp == usd_to_lbp).all()
+    return Transaction.query.filter(
+        Transaction.added_date.between(datetime.datetime.now() - datetime.timedelta(days=3),datetime.datetime.now())
+        ,Transaction.usd_to_lbp == usd_to_lbp
+        ).all()
 
 def sumAllRates(list):
     sum = 0
@@ -153,7 +161,7 @@ def validateUserExists(user_name,password):
     if(existsInDatabase == None):
         abort(404, 'User '+ user_name+' does not exist')
     if not bcrypt.check_password_hash(existsInDatabase.hashed_password, password):
-        abort(403, 'Incorrect password')
+        abort(403, 'Incorrect username or incorrect password')
     return existsInDatabase
 
 def validateAuthenticationToken(authentication_token):
@@ -188,43 +196,50 @@ def getAllTransactionOrderedByDateAndType(usd_to_lbp):
 
 @app.route('/transaction/datapoints' ,methods=['GET'])
 #for now going to do the send all data points, later will do the averages if needed
-def get_hourly_transaction_averages():
-    #first have to determine the start and end dates
+def get_time_based_transaction_averages():
     usd_transactions = getAllTransactionOrderedByDateAndType(usd_to_lbp = True)
-    usd_transactionsDataList = transactions_schema.dump(usd_transactions)
-
     lbp_transactions = getAllTransactionOrderedByDateAndType(usd_to_lbp = False)
-    lbp_transactionsDataList = transactions_schema.dump(lbp_transactions)
 
-    return Response(json.dumps({'usd data points' : usd_transactionsDataList,
-                                'lbp data point' : lbp_transactionsDataList,}),  mimetype='application/json')
+    # return Response(json.dumps({'usd data points' : usd_transactionsDataList,
+    #                             'lbp data point' : lbp_transactionsDataList,}),  mimetype='application/json')
 
-    # start_date_str = request.args.get('start_date', default='1 hour ago', type=str)
-    # end_date_str = request.args.get('end_date', default='now', type=str)
-    # try:
-    #     start_date = datetime.fromisoformat(start_date_str)
-    # except ValueError:
-    #     start_date = datetime.utcnow() - timedelta(hours=1)
-    # try:
-    #     end_date = datetime.fromisoformat(end_date_str)
-    # except ValueError:
-    #     end_date = datetime.utcnow()
+    timeFormat = request.json['timeFormat']
+    if(timeFormat == "Hourly"):
+        timeStep =  datetime.timedelta(hours=1)
+        end_date = datetime.datetime.now() - relativedelta(days = 1)
+    elif(timeFormat == "Daily"):
+        timeStep =  datetime.timedelta(days=1)
+        end_date = datetime.datetime.now() - relativedelta(days = 7)
+    elif(timeFormat == "Weekly"):
+        timeStep =  datetime.timedelta(weeks=1)
+        end_date = datetime.datetime.now() - relativedelta(months=1)
+    current_date = datetime.datetime.utcnow() # because of the location where the server or database is hosted
+    next_step_date = current_date - timeStep
+    # return jsonify(current_date,next_step_date)
 
-    # delta = timedelta(hours=1)
-    # current_date = start_date
-    # hourly_averages = []
-    # while current_date <= end_date:
-    #     next_date = current_date + delta
-    #     query = db.session.query(db.func.avg(Transaction.amount)).filter(Transaction.created_at >= current_date, Transaction.created_at < next_date)
-    #     hourly_average = query.scalar()
-    #     if hourly_average:
-    #         hourly_averages.append(hourly_average)
-    #     current_date = next_date
+    averagesUsd = []
+    averagesLbp = []
+    dates = []
+    filtered_usd_transactions = [t for t in usd_transactions if next_step_date <= t.added_date <= current_date]
+    # filtered_usd_transactions = transactions_schema.dump(filtered_usd_transactions)
+    # return jsonify(filtered_usd_transactions)
+    # return jsonify(current_date,next_step_date)
+
+    while end_date<next_step_date:
+        filtered_usd_transactions = [t for t in usd_transactions if next_step_date <= t.added_date <= current_date]
+        filtered_lbp_transactions = [t for t in lbp_transactions if next_step_date <= t.added_date <= current_date]
+        usd_average,lbp_average = calculateAveragesGivenInformation(filtered_usd_transactions,filtered_lbp_transactions)
+        averagesUsd.append(usd_average)
+        averagesLbp.append(lbp_average)
+        dates.append(current_date)
+        current_date = next_step_date
+        next_step_date = next_step_date - timeStep
     
-    # response_data = {'averages': hourly_averages}
 
-
-    # return jsonify(response_data)
+    response_data = {'averagesUsd': averagesUsd,
+                     'averagesLbp': averagesLbp,
+                     'dates': dates,}
+    return jsonify(response_data)
 
 with app.app_context():
     db.create_all()
