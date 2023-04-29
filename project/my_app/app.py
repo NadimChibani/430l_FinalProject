@@ -220,25 +220,28 @@ def get_time_based_transaction_averages():
     averagesUsd = []
     averagesLbp = []
     dates = []
-    # filtered_usd_transactions = transactions_schema.dump(filtered_usd_transactions)
-    # return jsonify(filtered_usd_transactions)
-    # return jsonify(current_date,next_step_date)
 
     while end_date<next_step_date:
         filtered_usd_transactions = [t for t in usd_transactions if next_step_date <= t.added_date <= current_date]
         filtered_lbp_transactions = [t for t in lbp_transactions if next_step_date <= t.added_date <= current_date]
         usd_average,lbp_average = calculateAveragesGivenInformation(filtered_usd_transactions,filtered_lbp_transactions)
-        averagesUsd.append(usd_average)
-        averagesLbp.append(lbp_average)
+        if(usd_average == "NO DATA"):
+            usd_average = -1.0
+        if(lbp_average == "NO DATA"):
+            lbp_average = -1.0
+        averagesUsd.append(float(usd_average))
+        averagesLbp.append(float(lbp_average))
         dates.append(current_date)
         current_date = next_step_date
         next_step_date = next_step_date - timeStep
     
-
     response_data = {'averagesUsdToLbp': averagesUsd,
                      'averagesLbpToUsd': averagesLbp,
                      'dates': dates,}
     return jsonify(response_data)
 
+# @app.route('/transaction/statistics' ,methods=['GET'])
+# def get_transaction_statistics():
+    
 with app.app_context():
     db.create_all()
