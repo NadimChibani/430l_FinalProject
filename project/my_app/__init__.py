@@ -1,1 +1,0 @@
-from project.my_app.db_config import DB_CONFIG
