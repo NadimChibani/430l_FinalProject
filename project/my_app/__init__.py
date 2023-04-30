@@ -1,1 +1,1 @@
-from project.my_app import db_config
+# from project.my_app import db_config
