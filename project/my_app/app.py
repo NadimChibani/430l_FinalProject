@@ -11,9 +11,6 @@ from flask import Response
 import json
 import os
 from dateutil.relativedelta import relativedelta
-
-from project.my_app.model.user import User, user_schema
-from project.my_app.model.transaction import Transaction, transaction_schema, transactions_schema 
 # from project.my_app.db_config import DB_CONFIG
 
 app = Flask(__name__)
@@ -28,6 +25,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
 CORS(app)
 db = SQLAlchemy(app)
 
+from project.my_app.model.user import User, user_schema
+from project.my_app.model.transaction import Transaction, transaction_schema, transactions_schema 
 
 SECRET_KEY = "b'|\xe7\xbfU3`\xc4\xec\xa7\xa9zf:}\xb5\xc7\xb9\x139^3@Dv'"
 
