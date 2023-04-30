@@ -194,7 +194,7 @@ def getAllTransactionOrderedByDateAndType(usd_to_lbp):
     transactions = Transaction.query.filter(Transaction.usd_to_lbp == usd_to_lbp).order_by(Transaction.added_date.desc()).all()
     return transactions
 
-@app.route('/transaction/datapoints' ,methods=['GET'])
+@app.route('/transaction/datapoints' ,methods=['POST'])
 #for now going to do the send all data points, later will do the averages if needed
 def get_time_based_transaction_averages():
     usd_transactions = getAllTransactionOrderedByDateAndType(usd_to_lbp = True)
