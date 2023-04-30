@@ -19,7 +19,7 @@ bcrypt = Bcrypt(app)
 ma = Marshmallow(app)
 
 #Had to put it here wasn't working otherwise need to test now that comfirmed working
-DB_CONFIG = os.environ["CLEARDB_WHITE_URL"]
+DB_CONFIG = os.environ["DB_CONFIG"]
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
 CORS(app)
