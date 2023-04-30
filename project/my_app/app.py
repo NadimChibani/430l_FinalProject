@@ -10,7 +10,7 @@ import datetime
 from flask import Response
 import json
 from dateutil.relativedelta import relativedelta
-from project.my_app import db_config
+from project.my_app.db_config import DB_CONFIG
 
 app = Flask(__name__)
 
