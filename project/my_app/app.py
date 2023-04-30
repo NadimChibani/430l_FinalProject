@@ -9,8 +9,9 @@ import jwt
 import datetime
 from flask import Response
 import json
+import os
 from dateutil.relativedelta import relativedelta
-from project.my_app.db_config import DB_CONFIG
+# from project.my_app.db_config import DB_CONFIG
 
 app = Flask(__name__)
 
@@ -18,7 +19,7 @@ bcrypt = Bcrypt(app)
 ma = Marshmallow(app)
 
 #Had to put it here wasn't working otherwise need to test now that comfirmed working
-DB_CONFIG = DB_CONFIG
+DB_CONFIG = os.environ["CLEARDB_WHITE_URL"]
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
 CORS(app)
