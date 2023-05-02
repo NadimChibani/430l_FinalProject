@@ -12,14 +12,14 @@ import json
 import os
 import sys
 from dateutil.relativedelta import relativedelta
-#from project.my_app.db_config import DB_CONFIG
+from project.my_app.db_config import DB_CONFIG
 
 app = Flask(__name__)
 
 bcrypt = Bcrypt(app)
 ma = Marshmallow(app)
 
-DB_CONFIG = os.environ["DB_CONFIG"]
+#DB_CONFIG = os.environ["DB_CONFIG"]
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
 CORS(app)
