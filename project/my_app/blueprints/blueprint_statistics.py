@@ -38,6 +38,8 @@ def handle_statistics():
     # calculating the number of transactions today
     timeStep =  datetime.timedelta(days=1)
     next_step_date = current_date - timeStep
+
+    #TODO fix timezone problem
     usd_transactions_today,lbp_transactions_today = get_all_transactions_between_two_dates(current_date,next_step_date,usd_transactions,lbp_transactions)
     total_transactions_today = len(usd_transactions_today) + len(lbp_transactions_today)
     response_data = {
