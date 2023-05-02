@@ -3,7 +3,6 @@ from ..app import request,datetime,relativedelta, add_to_database, jsonify, crea
 from project.my_app.models.transaction import Transaction, transaction_schema, transactions_schema
 from project.my_app.services.validator_transaction import validate_transaction_input
 from project.my_app.services.service_transaction import get_all_averages_based_on_timeStep, get_all_transactions_of_user, get_all_transactions_ordered_by_date_and_type, get_all_transactions_between_two_dates
-from project.my_app.services.service_statistics import calculate_averages_given_information
 
 blueprint_transaction = Blueprint(name="blueprint_transaction", import_name=__name__)
 
@@ -30,7 +29,6 @@ def handle_extract():
 
 
 @blueprint_transaction.route('/transaction/datapoints' ,methods=['POST'])
-#for now going to do the send all data points, later will do the averages if needed
 def get_time_based_transaction_averages():
     usd_transactions = get_all_transactions_ordered_by_date_and_type(usd_to_lbp = True)
     lbp_transactions = get_all_transactions_ordered_by_date_and_type(usd_to_lbp = False)
@@ -45,24 +43,6 @@ def get_time_based_transaction_averages():
     elif(timeFormat == "Weekly"):
         timeStep =  datetime.timedelta(weeks=1)
         end_date = datetime.datetime.now() - relativedelta(months=1)
-    # current_date = datetime.datetime.utcnow() # because of the location where the server or database is hosted
-    # next_step_date = current_date - timeStep
-
-    # averagesUsd = []
-    # averagesLbp = []
-    # dates = []
-    # while end_date<next_step_date:
-    #     filtered_usd_transactions, filtered_lbp_transactions = get_all_transactions_between_two_dates(usd_transactions,lbp_transactions,current_date,next_step_date)
-    #     usd_average,lbp_average = calculate_averages_given_information(filtered_usd_transactions,filtered_lbp_transactions)
-    #     if(usd_average == "NO DATA"):
-    #         usd_average = -1.0
-    #     if(lbp_average == "NO DATA"):
-    #         lbp_average = -1.0
-    #     averagesUsd.append(float(usd_average))
-    #     averagesLbp.append(float(lbp_average))
-    #     dates.append(current_date)
-    #     current_date = next_step_date
-    #     next_step_date = next_step_date - timeStep
     averagesUsd, averagesLbp, dates = get_all_averages_based_on_timeStep(usd_transactions,lbp_transactions,timeStep,end_date)
     response_data = {'averagesUsdToLbp': averagesUsd,
                      'averagesLbpToUsd': averagesLbp,
