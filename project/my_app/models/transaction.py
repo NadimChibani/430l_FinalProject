@@ -10,10 +10,12 @@ class Transaction(db.Model):
     nullable=True)
 
     def __init__(self, usd_amount, lbp_amount, usd_to_lbp, user_id):
-        super(Transaction, self).__init__(usd_amount=usd_amount,
-        lbp_amount=lbp_amount, usd_to_lbp=usd_to_lbp,
-        user_id=user_id,
-        added_date=datetime.datetime.now())
+        super(Transaction, self).__init__(
+            usd_amount=usd_amount,
+            lbp_amount=lbp_amount, usd_to_lbp=usd_to_lbp,
+            user_id=user_id,
+            added_date=datetime.datetime.now()
+            )
 
 
 class TransactionSchema(ma.Schema):
