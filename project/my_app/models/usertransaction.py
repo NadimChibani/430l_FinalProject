@@ -2,8 +2,8 @@ from ..app import db, ma, datetime
 
 class UserTransaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    seller_username = db.Column(db.String, db.ForeignKey('user.user_name'),nullable=False)
-    buyer_username = db.Column(db.String, db.ForeignKey('user.user_name'),nullable=True)
+    seller_username = db.Column(db.String(30), db.ForeignKey('user.user_name'),nullable=False)
+    buyer_username = db.Column(db.String(30), db.ForeignKey('user.user_name'),nullable=True)
 
     usd_amount = db.Column(db.Float,nullable=False)
     lbp_amount = db.Column(db.Float,nullable=False)
@@ -11,19 +11,34 @@ class UserTransaction(db.Model):
     added_date = db.Column(db.DateTime)
     status = db.Column(db.String(45),nullable=False)
 
+    seller_confirmation = db.Column(db.Boolean,nullable=True)
+    buyer_confirmation = db.Column(db.Boolean,nullable=True)
 
-    def __init__(self, usd_amount, lbp_amount, usd_to_lbp, user_id):
-        super(UserTransaction, self).__init__(usd_amount=usd_amount,
-        lbp_amount=lbp_amount, usd_to_lbp=usd_to_lbp,
-        seller_id=user_id,
-        added_date=datetime.datetime.now()),
-        status = "available"
+
+    def __init__(self, seller_username, usd_amount, lbp_amount, usd_to_lbp):
+        super(UserTransaction, self).__init__(
+            seller_username=seller_username,
+            buyer_username=None,
+            usd_amount=usd_amount,  
+            lbp_amount=lbp_amount, 
+            usd_to_lbp=usd_to_lbp,
+            added_date=datetime.datetime.now(),
+            status = "available",
+            seller_confirmation = False,
+            buyer_confirmation = False
+        )
 
 
 class UserTransactionSchema(ma.Schema):
     class Meta:
-        fields = ("id","seller_id","buyer_id", "usd_amount", "lbp_amount", "usd_to_lbp","added_date", "status")
+        fields = ("id","seller_username","buyer_username", "usd_amount", "lbp_amount", "usd_to_lbp","added_date", "status")
         model = UserTransaction
 
-user_transaction_schema = UserTransactionSchema()
-user_transactions_schema = UserTransactionSchema(many=True)
+class UserTransactionConfirmationSchema(ma.Schema):
+    class Meta:
+        fields = ("id","seller_username","buyer_username", "usd_amount", "lbp_amount", "usd_to_lbp","added_date", "status","seller_confirmation","buyer_confirmation")
+        model = UserTransaction
+
+usertransaction_schema = UserTransactionSchema()
+usertransactions_schema = UserTransactionSchema(many=True)
+usertransaction_confirmation_schema = UserTransactionConfirmationSchema()
