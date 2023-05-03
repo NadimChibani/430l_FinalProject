@@ -18,3 +18,9 @@ def validate_user_exists(user_name,password):
         abort(403, 'Incorrect username or incorrect password')
     return existsInDatabase
 
+def validate_user_id(user_id):
+    if user_id == None or user_id == "":
+        abort(400, 'User id not found')
+
+def validate_user_not_in_transaction(username):
+    abort(403, 'User '+ username+' is not part of transaction')

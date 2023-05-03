@@ -83,9 +83,11 @@ def check_authentication_token_not_null(authentication_token):
 from project.my_app.blueprints.blueprint_user import blueprint_user
 from project.my_app.blueprints.blueprint_statistics import blueprint_statistics
 from project.my_app.blueprints.blueprint_transaction import blueprint_transaction
+from project.my_app.blueprints.blueprint_usertransaction import blueprint_usertransaction
 app.register_blueprint(blueprint_user, url_prefix="")
 app.register_blueprint(blueprint_statistics, url_prefix="")
 app.register_blueprint(blueprint_transaction, url_prefix="")
+app.register_blueprint(blueprint_usertransaction, url_prefix="")
 
 with app.app_context():
     db.create_all()
