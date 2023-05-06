@@ -8,7 +8,7 @@ from ..app import add_to_database, get_id_from_authentication, request, jsonify
 
 blueprint_news = Blueprint(name="blueprint_news", import_name=__name__)
 
-@blueprint_news.route('/news',methods=['POST'])
+@blueprint_news.route('/news/post',methods=['POST'])
 def handle_insert():
     news = request.json["news"]
     user_id = get_id_from_authentication(request)
