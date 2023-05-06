@@ -1,5 +1,5 @@
 from flask import Blueprint
-from ..app import request,datetime,relativedelta, add_to_database, jsonify, create_token, extract_auth_token, check_authentication_token_not_null, validate_authentication_token
+from ..app import get_id_from_authentication, request,datetime,relativedelta, add_to_database, jsonify, create_token, extract_auth_token, check_authentication_token_not_null, validate_authentication_token
 from project.my_app.models.transaction import Transaction, transaction_schema, transactions_schema
 from project.my_app.services.validator_transaction import validate_transaction_input
 from project.my_app.services.service_transaction import get_all_averages_based_on_timeStep, get_all_transactions_of_user, get_all_transactions_ordered_by_date_and_type, get_all_transactions_between_two_dates
@@ -12,8 +12,9 @@ def handle_insert():
     lbp_amount = request.json["lbp_amount"]
     usd_to_lbp = request.json["usd_to_lbp"]
     validate_transaction_input(usd_amount,lbp_amount,usd_to_lbp)
-    authentication_token = extract_auth_token(request)
-    user_id = validate_authentication_token(authentication_token)
+    # authentication_token = extract_auth_token(request)
+    # user_id = validate_authentication_token(authentication_token)
+    user_id = get_id_from_authentication(request)
 
     new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp,user_id)
     add_to_database(new_Transaction)
@@ -21,9 +22,7 @@ def handle_insert():
 
 @blueprint_transaction.route('/transaction',methods=['GET'])
 def handle_extract():
-    authentication_token = extract_auth_token(request)
-    check_authentication_token_not_null(authentication_token)
-    user_id = validate_authentication_token(authentication_token)
+    user_id = get_id_from_authentication(request)
     transactions = get_all_transactions_of_user(user_id)
     return jsonify(transactions_schema.dump(transactions))
 

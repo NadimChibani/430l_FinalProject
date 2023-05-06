@@ -12,14 +12,14 @@ import json
 import os
 import sys
 from dateutil.relativedelta import relativedelta
-#from project.my_app.db_config import DB_CONFIG
+from project.my_app.db_config import DB_CONFIG
 
 app = Flask(__name__)
 
 bcrypt = Bcrypt(app)
 ma = Marshmallow(app)
 
-DB_CONFIG = os.environ["DB_CONFIG"]
+# DB_CONFIG = os.environ["DB_CONFIG"]
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
 CORS(app)
@@ -60,12 +60,11 @@ def decode_token(token):
     return payload['sub']
 
 def validate_authentication_token(authentication_token):
-    if(authentication_token == None):
-        return None
+    check_authentication_token_not_null(authentication_token)
     try:
         user_id = decode_token(authentication_token)
         if(user_id==None or user_id==0 or not User.query.filter_by(id=user_id).first()):
-            abort(403, 'Authentication token not linked to existing user')
+            abort(403, 'Invalid authentication token')
         return user_id
     except:
         abort(403, 'Invalid authentication token')
@@ -80,14 +79,20 @@ def check_authentication_token_not_null(authentication_token):
     if(authentication_token == None):
         abort(403, 'Authentication token not provided')
 
+def get_id_from_authentication(request):
+    authentication_token = extract_auth_token(request)
+    return validate_authentication_token(authentication_token)
+
 from project.my_app.blueprints.blueprint_user import blueprint_user
 from project.my_app.blueprints.blueprint_statistics import blueprint_statistics
 from project.my_app.blueprints.blueprint_transaction import blueprint_transaction
 from project.my_app.blueprints.blueprint_usertransaction import blueprint_usertransaction
+from project.my_app.blueprints.blueprint_news import blueprint_news
 app.register_blueprint(blueprint_user, url_prefix="")
 app.register_blueprint(blueprint_statistics, url_prefix="")
 app.register_blueprint(blueprint_transaction, url_prefix="")
 app.register_blueprint(blueprint_usertransaction, url_prefix="")
+app.register_blueprint(blueprint_news, url_prefix="")
 
 with app.app_context():
     db.create_all()

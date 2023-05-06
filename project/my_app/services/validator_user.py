@@ -1,6 +1,7 @@
 from flask import abort
 from project.my_app.models.user import User
 from project.my_app.app import bcrypt, decode_token
+from project.my_app.services.service_user import get_user
 
 def validate_user_input(user_name,password):
     if(user_name==None or user_name=="" or password==None or password==""):
@@ -24,3 +25,9 @@ def validate_user_id(user_id):
 
 def validate_user_not_in_transaction(username):
     abort(403, 'User '+ username+' is not part of transaction')
+
+def validate_user_role(role, user_id):
+    user = get_user(user_id)
+    if user.user_type != role:
+        abort(403, 'Privilege not allowed')
+    return user
