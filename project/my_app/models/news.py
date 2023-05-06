@@ -21,3 +21,4 @@ class NewsSchema(ma.Schema):
         model = News
 
 news_schema = NewsSchema()
+newss_schema = NewsSchema(many=True)
