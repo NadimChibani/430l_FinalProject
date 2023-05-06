@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from project.my_app.services.service_usertransaction import confirm_buyer_seller, get_all_offers_usertransactions, get_all_username_usertransactions
+from project.my_app.services.service_usertransaction import confirm_buyer_seller, get_all_offers_usertransactions, get_all_username_usertransactions, get_specific_usertransaction
 from ..app import db, request, datetime, relativedelta, add_to_database, jsonify, create_token, extract_auth_token, check_authentication_token_not_null, validate_authentication_token
 from project.my_app.services.validator_transaction import validate_transaction_input
 from project.my_app.models.usertransaction import UserTransaction, usertransaction_schema, usertransactions_schema, usertransaction_confirmation_schema
@@ -55,7 +55,7 @@ def handle_reserve():
     authentication_token = extract_auth_token(request)
     user_id = validate_authentication_token(authentication_token)
     buyer_username = get_user(user_id).user_name
-    usertransaction = UserTransaction.query.filter_by(id=usertransaction_id).first()
+    usertransaction = get_specific_usertransaction(usertransaction_id)
     usertransaction.buyer_username = buyer_username
     usertransaction.status = "reserved"
     db.session.commit()
@@ -67,7 +67,7 @@ def handle_confirm():
     authentication_token = extract_auth_token(request)
     user_id = validate_authentication_token(authentication_token)
     # username = get_user(user_id).user_name
-    usertransaction = UserTransaction.query.filter_by(id=usertransaction_id).first()
+    usertransaction = get_specific_usertransaction(usertransaction_id)
     usertransaction = confirm_buyer_seller(usertransaction,user_id)
     db.session.commit()
     response_data = {'userTransactionUpdated': usertransaction_confirmation_schema.dump(usertransaction)}
