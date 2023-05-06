@@ -1,7 +1,7 @@
 from flask import Blueprint
 
 from project.my_app.services.service_usertransaction import confirm_buyer_seller, get_all_offers_usertransactions, get_all_username_usertransactions, get_specific_usertransaction
-from ..app import db, request, datetime, relativedelta, add_to_database, jsonify, create_token, extract_auth_token, check_authentication_token_not_null, validate_authentication_token
+from ..app import db, get_id_from_authentication, request, datetime, relativedelta, add_to_database, jsonify, create_token, extract_auth_token, check_authentication_token_not_null, validate_authentication_token
 from project.my_app.services.validator_transaction import validate_transaction_input
 from project.my_app.models.usertransaction import UserTransaction, usertransaction_schema, usertransactions_schema, usertransaction_confirmation_schema
 from project.my_app.services.service_user import get_user
@@ -38,8 +38,9 @@ def handle_insert():
 #TODO add validation for seller is buyer, and that the transaction is pending
 @blueprint_usertransaction.route('/usertransaction/list/user',methods=['GET'])
 def handle_get_all():
-    authentication_token = extract_auth_token(request)
-    user_id = validate_authentication_token(authentication_token)
+    # authentication_token = extract_auth_token(request)
+    # user_id = validate_authentication_token(authentication_token)
+    user_id = get_id_from_authentication(request)
     seller_username = get_user(user_id).user_name
     usertransactions = get_all_username_usertransactions(seller_username)
     return jsonify(usertransactions_schema.dump(usertransactions)),200
@@ -52,8 +53,9 @@ def handle_get_all_offers():
 @blueprint_usertransaction.route('/usertransaction/reserve',methods=['PUT'])
 def handle_reserve():
     usertransaction_id = request.json["usertransaction_id"]
-    authentication_token = extract_auth_token(request)
-    user_id = validate_authentication_token(authentication_token)
+    # authentication_token = extract_auth_token(request)
+    # user_id = validate_authentication_token(authentication_token)
+    user_id = get_id_from_authentication(request)
     buyer_username = get_user(user_id).user_name
     usertransaction = get_specific_usertransaction(usertransaction_id)
     usertransaction.buyer_username = buyer_username
@@ -64,8 +66,9 @@ def handle_reserve():
 @blueprint_usertransaction.route('/usertransaction/confirm',methods=['PUT'])
 def handle_confirm():
     usertransaction_id = request.json["usertransaction_id"]
-    authentication_token = extract_auth_token(request)
-    user_id = validate_authentication_token(authentication_token)
+    # authentication_token = extract_auth_token(request)
+    # user_id = validate_authentication_token(authentication_token)
+    user_id = get_id_from_authentication(request)
     # username = get_user(user_id).user_name
     usertransaction = get_specific_usertransaction(usertransaction_id)
     usertransaction = confirm_buyer_seller(usertransaction,user_id)
