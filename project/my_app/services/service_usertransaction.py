@@ -12,7 +12,8 @@ def get_all_username_usertransactions(seller_username):
 def get_all_offers_usertransactions():
     return UserTransaction.query.filter_by(status="available").all()
 
-def confirm_buyer_seller(usertransaction,username,user_id):
+def confirm_buyer_seller(usertransaction,user_id):
+    username = get_user(user_id).user_name
     if usertransaction.buyer_username == username:
         usertransaction.buyer_confirmation = True
     elif usertransaction.seller_username == username:

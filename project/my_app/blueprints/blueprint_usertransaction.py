@@ -66,9 +66,9 @@ def handle_confirm():
     usertransaction_id = request.json["usertransaction_id"]
     authentication_token = extract_auth_token(request)
     user_id = validate_authentication_token(authentication_token)
-    username = get_user(user_id).user_name
+    # username = get_user(user_id).user_name
     usertransaction = UserTransaction.query.filter_by(id=usertransaction_id).first()
-    usertransaction = confirm_buyer_seller(usertransaction,username,user_id)
+    usertransaction = confirm_buyer_seller(usertransaction,user_id)
     db.session.commit()
     response_data = {'userTransactionUpdated': usertransaction_confirmation_schema.dump(usertransaction)}
     return jsonify(response_data),200
