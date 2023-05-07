@@ -24,4 +24,4 @@ def handle_user_authentication():
     validate_user_input(user_name,password)
 
     existsInDatabase = validate_user_exists(user_name,password)
-    return jsonify({"token":create_token(existsInDatabase.id)})
+    return jsonify({"token":create_token(existsInDatabase.id),"role":existsInDatabase.user_type})
