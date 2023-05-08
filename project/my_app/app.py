@@ -12,14 +12,14 @@ import json
 import os
 import sys
 from dateutil.relativedelta import relativedelta
-#from project.my_app.db_config import DB_CONFIG
+from project.my_app.db_config import DB_CONFIG
 
 app = Flask(__name__)
 
 bcrypt = Bcrypt(app)
 ma = Marshmallow(app)
 
-DB_CONFIG = os.environ["DB_CONFIG"]
+#DB_CONFIG = os.environ["DB_CONFIG"]
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
 CORS(app)
@@ -83,12 +83,23 @@ def get_id_from_authentication(request):
     authentication_token = extract_auth_token(request)
     return validate_authentication_token(authentication_token)
 
+# from project.my_app.blueprints.blueprint_user import blueprint_user
+from project.my_app.storage.storage import Storage
+storage = Storage(db)
+
+# from project.my_app.services.service_user import ServiceUser
+# service_user = ServiceUser(storage)
+
+# from project.my_app.blueprints.blueprint_user import ControllerUser
+# controller_user = ControllerUser(service_user)
+
 from project.my_app.blueprints.blueprint_user import blueprint_user
 from project.my_app.blueprints.blueprint_statistics import blueprint_statistics
 from project.my_app.blueprints.blueprint_transaction import blueprint_transaction
 from project.my_app.blueprints.blueprint_usertransaction import blueprint_usertransaction
 from project.my_app.blueprints.blueprint_news import blueprint_news
 app.register_blueprint(blueprint_user, url_prefix="")
+# app.register_blueprint(controller_user.blueprint_user, url_prefix="")
 app.register_blueprint(blueprint_statistics, url_prefix="")
 app.register_blueprint(blueprint_transaction, url_prefix="")
 app.register_blueprint(blueprint_usertransaction, url_prefix="")

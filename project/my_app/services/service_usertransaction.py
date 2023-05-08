@@ -2,7 +2,7 @@ from flask import abort
 from project.my_app.app import add_to_database
 from project.my_app.models.transaction import Transaction
 from project.my_app.models.usertransaction import UserTransaction
-from project.my_app.services.service_user import get_user
+from project.my_app.storage.storage import get_user
 from project.my_app.services.validator_transaction import validate_usertransaction
 from project.my_app.services.validator_user import validate_user_not_in_transaction
 

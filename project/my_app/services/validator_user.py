@@ -30,7 +30,7 @@ def validate_user_id(user_id):
 def validate_user_not_in_transaction(username):
     abort(403, 'User '+ username+' is not part of transaction')
 
-from project.my_app.services.service_user import get_user
+from project.my_app.storage.storage import get_user
 
 def validate_user_role(role, user_id):
     user = get_user(user_id)

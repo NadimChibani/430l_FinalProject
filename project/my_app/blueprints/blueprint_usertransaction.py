@@ -5,7 +5,7 @@ from project.my_app.services.validator_user import validate_seller_not_buyer, va
 from ..app import db, get_id_from_authentication, request, datetime, relativedelta, add_to_database, jsonify, create_token, extract_auth_token, check_authentication_token_not_null, validate_authentication_token
 from project.my_app.services.validator_transaction import validate_transaction_input
 from project.my_app.models.usertransaction import UserTransaction, usertransaction_schema, usertransactions_schema, usertransaction_confirmation_schema
-from project.my_app.services.service_user import get_user
+from project.my_app.storage.storage import get_user
 
 blueprint_usertransaction = Blueprint(name="blueprint_usertransaction", import_name=__name__)
 
@@ -30,11 +30,8 @@ def handle_insert():
     add_to_database(new_UserTransaction)
     return jsonify(usertransaction_schema.dump(new_UserTransaction)),201
 
-#TODO add validation for seller is buyer, and that the transaction is pending
 @blueprint_usertransaction.route('/usertransaction/list/user',methods=['GET'])
 def handle_get_all():
-    # authentication_token = extract_auth_token(request)
-    # user_id = validate_authentication_token(authentication_token)
     user_id = get_id_from_authentication(request)
     seller_username = get_user(user_id).user_name
     usertransactions = get_all_username_usertransactions(seller_username)
@@ -48,8 +45,6 @@ def handle_get_all_offers():
 @blueprint_usertransaction.route('/usertransaction/reserve',methods=['PUT'])
 def handle_reserve():
     usertransaction_id = request.json["usertransaction_id"]
-    # authentication_token = extract_auth_token(request)
-    # user_id = validate_authentication_token(authentication_token)
     user_id = get_id_from_authentication(request)
     buyer_username = get_user(user_id).user_name
     usertransaction = get_specific_usertransaction(usertransaction_id)
@@ -62,8 +57,6 @@ def handle_reserve():
 @blueprint_usertransaction.route('/usertransaction/confirm',methods=['PUT'])
 def handle_confirm():
     usertransaction_id = request.json["usertransaction_id"]
-    # authentication_token = extract_auth_token(request)
-    # user_id = validate_authentication_token(authentication_token)
     user_id = get_id_from_authentication(request)
     usertransaction = get_specific_usertransaction(usertransaction_id)
     usertransaction = confirm_buyer_seller(usertransaction,user_id)
