@@ -1,6 +1,7 @@
 from flask import Blueprint
 
 from project.my_app.services.service_ml import predict
+from project.my_app.services.validator_transaction import validate_dates
 from ..app import jsonify,relativedelta
 import datetime
 from project.my_app.services.service_statistics import calculate_averages_given_information
@@ -28,21 +29,20 @@ def handle_statistics():
     start_date = request.json['startDate']
     end_date = request.json['endDate']
 
+    validate_dates(start_date,end_date)
     if(timeFormat == "Hourly"):
         timeStep =  datetime.timedelta(hours=1)
-    #     end_date = datetime.datetime.now() - relativedelta(days = 1)
     elif(timeFormat == "Daily"):
         timeStep =  datetime.timedelta(days=1)
-    #     end_date = datetime.datetime.now() - relativedelta(days = 7)
     elif(timeFormat == "Weekly"):
         timeStep =  datetime.timedelta(weeks=1)
-    #     end_date = datetime.datetime.now() - relativedelta(months=1)
+
+    current_date =  datetime.datetime.fromtimestamp(start_date)
+    formated_end_date = datetime.datetime.fromtimestamp(end_date)
 
     # calculating the number of transactions in the last week
     usd_transactions = get_all_transactions_ordered_by_date_and_type(usd_to_lbp = True)
     lbp_transactions = get_all_transactions_ordered_by_date_and_type(usd_to_lbp = False)
-    current_date =  datetime.datetime.fromtimestamp(start_date)
-    formated_end_date = datetime.datetime.fromtimestamp(end_date)
 
     next_step_date = current_date - timeStep
     usd_transactions_between_dates, lbp_transactions_between_dates = get_all_transactions_between_two_dates(current_date,formated_end_date,usd_transactions,lbp_transactions)

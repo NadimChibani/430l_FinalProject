@@ -1,7 +1,7 @@
 from flask import Blueprint
 from ..app import get_id_from_authentication, request,datetime,relativedelta, add_to_database, jsonify, create_token, extract_auth_token, check_authentication_token_not_null, validate_authentication_token
 from project.my_app.models.transaction import Transaction, transaction_schema, transactions_schema
-from project.my_app.services.validator_transaction import validate_transaction_input
+from project.my_app.services.validator_transaction import validate_dates, validate_transaction_input
 from project.my_app.services.service_transaction import get_all_averages_based_on_timeStep, get_all_transactions_of_user, get_all_transactions_ordered_by_date_and_type, get_all_transactions_between_two_dates
 
 blueprint_transaction = Blueprint(name="blueprint_transaction", import_name=__name__)
@@ -17,7 +17,6 @@ def handle_insert():
         user_id = None
     else:
         user_id = validate_authentication_token(authentication_token)
-
     new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp,user_id)
     add_to_database(new_Transaction)
     return jsonify(transaction_schema.dump(new_Transaction)),201
@@ -38,6 +37,7 @@ def get_time_based_transaction_averages():
     start_date = request.json['startDate']
     end_date = request.json['endDate']
 
+    validate_dates(start_date,end_date)
     if(timeFormat == "Hourly"):
         timeStep =  datetime.timedelta(hours=1)
     #     end_date = datetime.datetime.now() - relativedelta(days = 1)

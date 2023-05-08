@@ -8,15 +8,6 @@ from project.my_app.services.service_user import get_user
 
 blueprint_usertransaction = Blueprint(name="blueprint_usertransaction", import_name=__name__)
 
-# post user transaction
-# get all user transactions
-# get all offers
-# reserve user transaction
-# comfirm user transaction
-# cancel user transaction??
-# auto cancel user transaction??
-
-
 @blueprint_usertransaction.route('/usertransaction',methods=['POST'])
 def handle_insert():
     usd_amount = request.json["usd_amount"]
