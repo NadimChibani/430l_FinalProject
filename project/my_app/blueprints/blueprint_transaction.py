@@ -12,9 +12,11 @@ def handle_insert():
     lbp_amount = request.json["lbp_amount"]
     usd_to_lbp = request.json["usd_to_lbp"]
     validate_transaction_input(usd_amount,lbp_amount,usd_to_lbp)
-    # authentication_token = extract_auth_token(request)
-    # user_id = validate_authentication_token(authentication_token)
-    user_id = get_id_from_authentication(request)
+    authentication_token = extract_auth_token(request)
+    if(authentication_token == None):
+        user_id = None
+    else:
+        user_id = validate_authentication_token(authentication_token)
 
     new_Transaction = Transaction(usd_amount,lbp_amount,usd_to_lbp,user_id)
     add_to_database(new_Transaction)
