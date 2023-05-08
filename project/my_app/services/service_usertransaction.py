@@ -1,7 +1,9 @@
+from flask import abort
 from project.my_app.app import add_to_database
 from project.my_app.models.transaction import Transaction
 from project.my_app.models.usertransaction import UserTransaction
 from project.my_app.services.service_user import get_user
+from project.my_app.services.validator_transaction import validate_usertransaction
 from project.my_app.services.validator_user import validate_user_not_in_transaction
 
 def get_all_username_usertransactions(seller_username):
@@ -13,7 +15,11 @@ def get_all_offers_usertransactions():
     return UserTransaction.query.filter_by(status="available").all()
 
 def get_specific_usertransaction(usertransaction_id):
-    return UserTransaction.query.filter_by(id=usertransaction_id).first()
+    validate_usertransaction(usertransaction_id)
+    result = UserTransaction.query.filter_by(id=usertransaction_id).first()
+    if(result == None):
+        abort(404, 'UserTransaction not found')
+    return result
 
 def confirm_buyer_seller(usertransaction,user_id):
     username = get_user(user_id).user_name
