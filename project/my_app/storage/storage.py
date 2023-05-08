@@ -4,6 +4,7 @@ from project.my_app.app import db
 from project.my_app.models.news import News
 from project.my_app.models.transaction import Transaction
 from project.my_app.models.user import User
+from project.my_app.models.usertransaction import UserTransaction
 
 class Storage:
     def __init__(self, db):
@@ -30,6 +31,20 @@ class Storage:
             ,Transaction.usd_to_lbp == usd_to_lbp
             ).all()
     
+    def get_all_username_usertransactions(seller_username):
+        transaction_where_seller =  UserTransaction.query.filter_by(seller_username=seller_username).all()
+        transaction_where_buyer =  UserTransaction.query.filter_by(buyer_username=seller_username).all()
+        return transaction_where_seller + transaction_where_buyer
+
+    def get_all_offers_usertransactions():
+        return UserTransaction.query.filter_by(status="available").all()
+
+    def get_specific_usertransaction(usertransaction_id):
+        result = UserTransaction.query.filter_by(id=usertransaction_id).first()
+        if(result == None):
+            abort(404, 'UserTransaction not found')
+        return result
+    
     def handle_number_of_news():
         news = News.query.order_by(News.added_date.desc()).all()
         if len(news) == 3:
@@ -38,7 +53,7 @@ class Storage:
     def get_all_news():
         return News.query.order_by(News.added_date.desc()).all()
 
-
-def get_user(user_id):
-    return User.query.filter_by(id=user_id).first()
+    def get_user(user_id):
+        return User.query.filter_by(id=user_id).first()
+    
 

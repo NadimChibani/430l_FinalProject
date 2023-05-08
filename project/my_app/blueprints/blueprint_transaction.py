@@ -24,7 +24,6 @@ class ControllerTransaction:
         return self.service_transaction.get_time_based_transaction_averages(timeFormat,start_date,end_date)
 
 from project.my_app.services.service_transaction import service_transaction
-
 controller_transaction = ControllerTransaction(service_transaction)
 
 blueprint_transaction = Blueprint(name="blueprint_transaction", import_name=__name__)
