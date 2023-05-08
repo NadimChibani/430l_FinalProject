@@ -1,6 +1,7 @@
 from flask import Blueprint
 
 from project.my_app.services.service_usertransaction import confirm_buyer_seller, get_all_offers_usertransactions, get_all_username_usertransactions, get_specific_usertransaction
+from project.my_app.services.validator_user import validate_seller_not_buyer, validate_user_phone_number
 from ..app import db, get_id_from_authentication, request, datetime, relativedelta, add_to_database, jsonify, create_token, extract_auth_token, check_authentication_token_not_null, validate_authentication_token
 from project.my_app.services.validator_transaction import validate_transaction_input
 from project.my_app.models.usertransaction import UserTransaction, usertransaction_schema, usertransactions_schema, usertransaction_confirmation_schema
@@ -13,7 +14,9 @@ def handle_insert():
     usd_amount = request.json["usd_amount"]
     lbp_amount = request.json["lbp_amount"]
     usd_to_lbp = request.json["usd_to_lbp"]
+    seller_phone_number = request.json["seller_phone_number"]
     validate_transaction_input(usd_amount,lbp_amount,usd_to_lbp)
+    validate_user_phone_number(seller_phone_number)
     authentication_token = extract_auth_token(request)
     user_id = validate_authentication_token(authentication_token)
     seller_username = get_user(user_id).user_name
@@ -22,6 +25,7 @@ def handle_insert():
         usd_amount=usd_amount,
         lbp_amount=lbp_amount,
         usd_to_lbp=usd_to_lbp,
+        seller_phone_number=seller_phone_number,
     )
     add_to_database(new_UserTransaction)
     return jsonify(usertransaction_schema.dump(new_UserTransaction)),201
@@ -49,6 +53,7 @@ def handle_reserve():
     user_id = get_id_from_authentication(request)
     buyer_username = get_user(user_id).user_name
     usertransaction = get_specific_usertransaction(usertransaction_id)
+    validate_seller_not_buyer(usertransaction,buyer_username)
     usertransaction.buyer_username = buyer_username
     usertransaction.status = "reserved"
     db.session.commit()
@@ -60,7 +65,6 @@ def handle_confirm():
     # authentication_token = extract_auth_token(request)
     # user_id = validate_authentication_token(authentication_token)
     user_id = get_id_from_authentication(request)
-    # username = get_user(user_id).user_name
     usertransaction = get_specific_usertransaction(usertransaction_id)
     usertransaction = confirm_buyer_seller(usertransaction,user_id)
     db.session.commit()

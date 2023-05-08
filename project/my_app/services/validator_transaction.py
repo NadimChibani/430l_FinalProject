@@ -8,7 +8,7 @@ def validate_transaction_input(usd_amount,lbp_amount,usd_to_lbp):
         abort(400, 'UsdAmount or LbpAmount or TransactionType is incorrect')
     if usd_amount ==0 or lbp_amount ==0:
         abort(400, 'UsdAmount or LbpAmount or TransactionType is incorrect')
-    if usd_to_lbp != True or usd_to_lbp != False or usd_to_lbp == None or usd_to_lbp == "":
+    if not isinstance(usd_to_lbp, bool) or usd_to_lbp == None or usd_to_lbp == "":
         abort(400, 'UsdAmount or LbpAmount or TransactionType is incorrect')
 
 def validate_usertransaction(transaction_id):

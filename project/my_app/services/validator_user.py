@@ -37,3 +37,14 @@ def validate_user_role(role, user_id):
     if user.user_type != role:
         abort(403, 'Privilege not allowed')
     return user
+
+def validate_user_phone_number(phone_number):
+    regex_pattern = r'^\d{8}$'
+    if not re.match(regex_pattern, str(phone_number)):
+        abort(400, 'Phone number is incorrect')
+    if phone_number==None or phone_number=="":
+        abort(400, 'Phone number is incorrect')
+
+def validate_seller_not_buyer(usertransaction,buyer_username):
+    if usertransaction.seller_username == buyer_username:
+        abort(403, 'Seller cannot reserve his own offer')

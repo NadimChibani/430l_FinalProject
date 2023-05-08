@@ -13,7 +13,3 @@ def predict(date):
     result_lbp = loaded_model_lbp.predict([[date]])
     result_usd = loaded_model_usd.predict([[date]])
     return result_lbp[0],result_usd[0]
-
-
-
-
