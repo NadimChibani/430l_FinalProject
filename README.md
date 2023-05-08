@@ -7,6 +7,7 @@ To run this project:
 
 This backend was done by Nadim Chibani
 Link to swagger documentation: https://app.swaggerhub.com/apis-docs/NadimChibani/Alpha-Exchange-Rate/2.2
+Repositry link: https://github.com/NadimChibani/430l_FinalProject
 
 The software architecture/design pattern used is the model view controller used to isolate between three layers:
 The controller layer which deals wich receives the http requests
