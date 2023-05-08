@@ -61,4 +61,6 @@ def handle_statistics():
 def predict_rate():
     date = request.json["date"]
     result = predict(date)
-    return jsonify(result)
+    return jsonify({"lbp_to_usd_rate": result[0],
+                    "usd_to_lbp_rate": result[1]
+                    })

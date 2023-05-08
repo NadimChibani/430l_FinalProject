@@ -14,10 +14,8 @@ loaded_model_lbp = joblib.load(os.path.join(dirname, 'model_lbp.sav'))
 loaded_model_usd = joblib.load(os.path.join(dirname, 'model_usd.sav'))
 
 def predict(date):
-    date = datetime.datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %Z")
-    date_unix = int(datetime.datetime.timestamp(date))
-    result_lbp = loaded_model_lbp.predict([[date_unix]])
-    result_usd = loaded_model_usd.predict([[date_unix]])
+    result_lbp = loaded_model_lbp.predict([[date]])
+    result_usd = loaded_model_usd.predict([[date]])
     return result_lbp[0],result_usd[0]
 
 
