@@ -1,6 +1,7 @@
 import datetime
 from flask import abort
 from project.my_app.app import db
+from project.my_app.models.news import News
 from project.my_app.models.transaction import Transaction
 from project.my_app.models.user import User
 
@@ -28,6 +29,15 @@ class Storage:
             Transaction.added_date.between(datetime.datetime.now() - datetime.timedelta(days=3),datetime.datetime.now())
             ,Transaction.usd_to_lbp == usd_to_lbp
             ).all()
+    
+    def handle_number_of_news():
+        news = News.query.order_by(News.added_date.desc()).all()
+        if len(news) == 3:
+            News.query.filter_by(id=news[2].id).delete()
+
+    def get_all_news():
+        return News.query.order_by(News.added_date.desc()).all()
+
 
 def get_user(user_id):
     return User.query.filter_by(id=user_id).first()
