@@ -1,8 +1,5 @@
 from flask import Blueprint
-from ..app import get_id_from_authentication, request,datetime,relativedelta, add_to_database, jsonify, create_token, extract_auth_token, check_authentication_token_not_null, validate_authentication_token
-from project.my_app.models.transaction import Transaction, transaction_schema, transactions_schema
-from project.my_app.services.validator_transaction import validate_dates, validate_transaction_input
-from project.my_app.services.service_transaction import get_all_averages_based_on_timeStep, get_all_transactions_of_user, get_all_transactions_ordered_by_date_and_type, get_all_transactions_between_two_dates
+from ..app import request
 
 class ControllerTransaction:
     def __init__(self, service_transaction):

@@ -1,7 +1,5 @@
-from flask import Blueprint#, request, jsonify
-from ..app import request, jsonify, create_token
-from project.my_app.models.user import User, user_schema
-from project.my_app.services.validator_user import validate_user_input, validate_user_input_already_exists, validate_user_exists
+from flask import Blueprint#
+from ..app import request
 
 class ControllerUser:
     def __init__(self, service_user):

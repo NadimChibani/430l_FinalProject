@@ -11,7 +11,7 @@ class ControllerNews:
     def handle_extract(self):
         return self.service_news.get_all_news()
 
-from project.my_app.services.service_user import service_news
+from project.my_app.services.service_news import service_news
 controller_news = ControllerNews(service_news)
 
 blueprint_news = Blueprint(name="blueprint_news", import_name=__name__)

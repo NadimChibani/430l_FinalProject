@@ -1,11 +1,4 @@
 from flask import Blueprint
-
-from project.my_app.services.service_ml import predict
-from project.my_app.services.validator_transaction import validate_dates
-from ..app import jsonify,relativedelta
-import datetime
-from project.my_app.services.service_statistics import calculate_averages_given_information
-from project.my_app.services.service_transaction import get_all_averages_based_on_timeStep, get_all_transactions_last_three_days, get_all_transactions_between_two_dates
 from ..app import request
 
 class ControllerStatistics:

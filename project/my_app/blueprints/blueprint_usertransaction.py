@@ -1,11 +1,5 @@
 from flask import Blueprint
-
-from project.my_app.services.service_usertransaction import confirm_buyer_seller, get_all_offers_usertransactions, get_all_username_usertransactions, get_specific_usertransaction
-from project.my_app.services.validator_user import validate_seller_not_buyer, validate_user_phone_number
-from ..app import db, get_id_from_authentication, request, datetime, relativedelta, add_to_database, jsonify, create_token, extract_auth_token, check_authentication_token_not_null, validate_authentication_token
-from project.my_app.services.validator_transaction import validate_transaction_input
-from project.my_app.models.usertransaction import UserTransaction, usertransaction_schema, usertransactions_schema, usertransaction_confirmation_schema
-from project.my_app.storage.storage import get_user
+from ..app import  request
 
 class ControllerUserTransaction:
     def __init__(self, service_usertransaction):
