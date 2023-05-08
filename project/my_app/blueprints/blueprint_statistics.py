@@ -1,8 +1,13 @@
 from flask import Blueprint
+
+from project.my_app.services.service_ml import predict
 from ..app import jsonify,relativedelta
 import datetime
 from project.my_app.services.service_statistics import calculate_averages_given_information
 from project.my_app.services.service_transaction import get_all_averages_based_on_timeStep, get_all_transactions_last_three_days, get_all_transactions_between_two_dates, get_all_transactions_ordered_by_date_and_type
+# from project.my_app.services.service_ml import filename
+# import joblib
+from ..app import request
 
 blueprint_statistics = Blueprint(name="blueprint_statistics", import_name=__name__)
 
@@ -51,3 +56,9 @@ def handle_statistics():
         'totalTransactionsToday': total_transactions_today,
         }
     return jsonify(response_data)
+
+@blueprint_statistics.route('/datapoints/predict' ,methods=['POST'])
+def predict_rate():
+    date = request.json["date"]
+    result = predict(date)
+    return jsonify(result)
