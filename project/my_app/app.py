@@ -83,6 +83,9 @@ def get_id_from_authentication(request):
     authentication_token = extract_auth_token(request)
     return validate_authentication_token(authentication_token)
 
+from project.my_app.storage.storage import Storage
+storage = Storage(db)
+
 from project.my_app.blueprints.blueprint_user import blueprint_user
 from project.my_app.blueprints.blueprint_statistics import blueprint_statistics
 from project.my_app.blueprints.blueprint_transaction import blueprint_transaction
