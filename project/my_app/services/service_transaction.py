@@ -21,8 +21,12 @@ def get_all_transactions_between_two_dates(current_date,next_step_date,usd_trans
     filtered_lbp_transactions = [t for t in lbp_transactions if next_step_date <= t.added_date <= current_date]
     return filtered_usd_transactions,filtered_lbp_transactions
 
-def get_all_averages_based_on_timeStep(usd_transactions,lbp_transactions,timeStep,end_date):
-    current_date = datetime.datetime.utcnow() # because of the location where the server or database is hosted
+def get_all_averages_based_on_timeStep(usd_transactions,lbp_transactions,timeStep,start_date,end_date):
+    # current_date = datetime.datetime.utcnow() # because of the location where the server or database is hosted
+    start_date = datetime.datetime.strptime(start_date, "%a, %d %b %Y %H:%M:%S %Z")
+    end_date = datetime.datetime.strptime(end_date, "%a, %d %b %Y %H:%M:%S %Z")
+    # return start_date,end_date,end_date
+    current_date = start_date
     next_step_date = current_date - timeStep
     averagesUsd = []
     averagesLbp = []

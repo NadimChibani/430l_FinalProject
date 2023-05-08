@@ -33,16 +33,20 @@ def get_time_based_transaction_averages():
     lbp_transactions = get_all_transactions_ordered_by_date_and_type(usd_to_lbp = False)
 
     timeFormat = request.json['timeFormat']
+    start_date = request.json['startDate']
+    end_date = request.json['endDate']
+
     if(timeFormat == "Hourly"):
         timeStep =  datetime.timedelta(hours=1)
-        end_date = datetime.datetime.now() - relativedelta(days = 1)
+    #     end_date = datetime.datetime.now() - relativedelta(days = 1)
     elif(timeFormat == "Daily"):
         timeStep =  datetime.timedelta(days=1)
-        end_date = datetime.datetime.now() - relativedelta(days = 7)
+    #     end_date = datetime.datetime.now() - relativedelta(days = 7)
     elif(timeFormat == "Weekly"):
         timeStep =  datetime.timedelta(weeks=1)
-        end_date = datetime.datetime.now() - relativedelta(months=1)
-    averagesUsd, averagesLbp, dates = get_all_averages_based_on_timeStep(usd_transactions,lbp_transactions,timeStep,end_date)
+    #     end_date = datetime.datetime.now() - relativedelta(months=1)
+
+    averagesUsd, averagesLbp, dates = get_all_averages_based_on_timeStep(usd_transactions,lbp_transactions,timeStep,start_date,end_date)
     response_data = {'averagesUsdToLbp': averagesUsd,
                      'averagesLbpToUsd': averagesLbp,
                      'dates': dates,}
