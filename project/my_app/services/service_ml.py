@@ -10,9 +10,10 @@ import os
 
 dirname = os.path.dirname(__file__)
 
-loaded_model_lbp = joblib.load(os.path.join(dirname, 'model_lbp.sav'))
-loaded_model_usd = joblib.load(os.path.join(dirname, 'model_usd.sav'))
-
+# loaded_model_lbp = joblib.load(os.path.join(dirname, 'model_lbp.sav'))
+# loaded_model_usd = joblib.load(os.path.join(dirname, 'model_usd.sav'))
+loaded_model_lbp = ""
+loaded_model_usd= ""
 def predict(date):
     result_lbp = loaded_model_lbp.predict([[date]])
     result_usd = loaded_model_usd.predict([[date]])
