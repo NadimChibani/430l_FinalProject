@@ -58,9 +58,9 @@ class ServiceValidator:
             abort(400, 'News input is incorrect, please change it')
 
     def validate_transaction_input(self,usd_amount,lbp_amount,usd_to_lbp):
-        regex_pattern = r'^\d{1,10}$'
-        if not re.match(regex_pattern, str(usd_amount)) or not re.match(regex_pattern, str(lbp_amount)):
-            abort(400, 'UsdAmount or LbpAmount or TransactionType is incorrect')
+        # regex_pattern = r'^\d{1,10}$'
+        # if not re.match(regex_pattern, str(usd_amount)) or not re.match(regex_pattern, str(lbp_amount)):
+        #     abort(400, 'UsdAmount or LbpAmount or TransactionType is incorrect')
         if usd_amount ==0 or lbp_amount ==0:
             abort(400, 'UsdAmount or LbpAmount or TransactionType is incorrect')
         if not isinstance(usd_to_lbp, bool) or usd_to_lbp == None or usd_to_lbp == "":
