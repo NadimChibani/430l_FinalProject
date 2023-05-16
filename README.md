@@ -6,7 +6,7 @@ To run this project:
 4- flask run
 
 This backend was done by Nadim Chibani
-Link to swagger documentation: https://app.swaggerhub.com/apis-docs/NadimChibani/Alpha-Exchange-Rate/2.1
+Link to swagger documentation: https://app.swaggerhub.com/apis-docs/NadimChibani/Alpha-Exchange-Rate/2.2
 
 The software architecture/design pattern used is the model view controller used to isolate between three layers:
 The controller layer which deals wich receives the http requests
